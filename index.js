@@ -14,8 +14,8 @@ AFRAME.registerComponent('simple-link', {
     title: {default: '', type: 'string'},
     color: {default: '#fff', type: 'color'},
     titleColor: {default: '#fff', type: 'color'},
-    icon: {default: '', type: 'asset'}
-
+    image: {default: '', type: 'asset'},
+    on: {default: 'click'}
   },
 
   /**
@@ -31,7 +31,15 @@ AFRAME.registerComponent('simple-link', {
     var el = this.el;
     var textEl;
 
-     el.setAttribute('geometry', {primitive: 'circle', radius: 1.0, segments: 64});
+     el.setAttribute('geometry', {
+       primitive: 'circle',
+       radius: 1.0,
+       segments: 64}
+     );
+     el.setAttribute('color', this.data.color);
+     if (this.data.image) {
+       el.setAttribute('material', 'src', typeof this.data.image === 'string' ? this.data.image : this.data.image.src);
+     }
 
     textEl = this.textEl || document.createElement('a-entity');
     textEl.setAttribute('text', {
@@ -49,7 +57,12 @@ AFRAME.registerComponent('simple-link', {
    * Called when component is attached and when component data changes.
    * Generally modifies the entity based on the data.
    */
-  update: function (oldData) { },
+  update: function (oldData) {
+    var data = this.data;
+    if (data.on !== oldData.on) {
+      this.updateEventListener();
+    }
+  },
 
   /**
    * Called when a component is removed (e.g., via removeAttribute).
@@ -72,7 +85,22 @@ AFRAME.registerComponent('simple-link', {
    * Called when entity resumes.
    * Use to continue or add any dynamic or background behavior such as events.
    */
-  play: function () { },
+  play: function () {
+    this.updateEventListener();
+  },
+
+  updateEventListener: function () {
+    var el = this.el;
+    if (!el.isPlaying) { return; }
+    this.removeEventListener();
+    el.addEventListener(this.data.on, this.navigate);
+  },
+
+  removeEventListener: function () {
+    var on = this.data.on;
+    if (!on) { return; }
+    this.el.removeEventListener(on, this.navigate);
+  },
 
   /**
    * Called when the link is clicked.
