@@ -33,12 +33,13 @@ AFRAME.registerComponent('simple-link', {
 
      el.setAttribute('geometry', {
        primitive: 'circle',
-       radius: 1.0,
-       segments: 64}
+       radius: 1}
      );
-     el.setAttribute('color', this.data.color);
      if (this.data.image) {
-       el.setAttribute('material', 'src', typeof this.data.image === 'string' ? this.data.image : this.data.image.src);
+       el.setAttribute('material', {
+         'src': typeof this.data.image === 'string' ? this.data.image : this.data.image.src,
+         'color': this.data.color
+       });
      }
 
     textEl = this.textEl || document.createElement('a-entity');
@@ -68,7 +69,9 @@ AFRAME.registerComponent('simple-link', {
    * Called when a component is removed (e.g., via removeAttribute).
    * Generally undoes all modifications to the entity.
    */
-  remove: function () { },
+  remove: function () {
+    this.removeEventListener();
+  },
 
   /**
    * Called on each scene tick.
